@@ -4,10 +4,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+@Data // подумать
 
-@Setter
-@Getter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

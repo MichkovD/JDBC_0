@@ -5,9 +5,10 @@ import jm.task.core.jdbc.dao.UserDaoHibernateImpl;
 import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.PropertiesUtil;
-
+import lombok.NoArgsConstructor;
 import java.util.List;
 
+@NoArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private static final boolean switchToHibernate = Boolean.parseBoolean(PropertiesUtil.get("switchToHibernate"));

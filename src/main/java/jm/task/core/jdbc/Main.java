@@ -3,21 +3,21 @@ package jm.task.core.jdbc;
 import jm.task.core.jdbc.service.UserService;
 import jm.task.core.jdbc.service.UserServiceImpl;
 import jm.task.core.jdbc.util.PropertiesUtil;
-import org.hibernate.annotations.common.util.impl.LoggerFactory;
-import org.jboss.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 public class Main {
-    private static final Logger logger = LoggerFactory.logger(Main.class);
     private static final boolean switchToHibernate = Boolean.parseBoolean(PropertiesUtil.get("switchToHibernate"));
 
     public static void main(String[] args) {
 
         if (switchToHibernate){
-            logger.info("Application started with hibernate implementation");
+            log.info("Application started with hibernate implementation");
             MyTestHibernate();
         }
         else{
-            logger.info("Application started with JDBC implementation");
+            log.info("Application started with JDBC implementation");
             MyTestJDBC();
         }
     }

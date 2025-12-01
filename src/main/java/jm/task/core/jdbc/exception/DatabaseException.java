@@ -1,20 +1,23 @@
 package jm.task.core.jdbc.exception;
 
-import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
-import org.hibernate.annotations.common.util.impl.LoggerFactory;
-import org.jboss.logging.Logger;
+import lombok.Getter;
+import java.time.LocalDateTime;
 
+@Getter
 public class DatabaseException extends RuntimeException {
-    private static final Logger logger = LoggerFactory.logger(DatabaseException.class);
+    private final String reason;
 
-    public DatabaseException(Exception e) {
-        super(e);
-        logger.error("Data Base Exception happened.", e);
+    private final LocalDateTime timestamp;
+
+    public DatabaseException(String message, Throwable cause) {
+        super("DB Exception: " + message, cause);
+        this.reason = message;
+        this.timestamp = LocalDateTime.now();
     }
 
-    public DatabaseException(String message, Exception e)
-    {
-        super(message, e);
-        logger.error("Data Base Exception happened." + message, e);
+    public DatabaseException(Throwable cause) {
+        super("DB Exception", cause);
+        this.reason = "Unknown error with DB";
+        this.timestamp = LocalDateTime.now();
     }
 }
