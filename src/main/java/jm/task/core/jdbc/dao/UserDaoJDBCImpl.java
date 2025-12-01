@@ -1,6 +1,6 @@
 package jm.task.core.jdbc.dao;
 
-import jm.task.core.jdbc.exception.DaoException;
+import jm.task.core.jdbc.exception.DatabaseException;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.PropertiesUtil;
 import jm.task.core.jdbc.util.Util;
@@ -17,20 +17,26 @@ import org.jboss.logging.Logger;
 public class UserDaoJDBCImpl implements UserDao {
     private static final Logger logger = LoggerFactory.logger(UserDaoJDBCImpl.class);
 
-    public UserDaoJDBCImpl() {
-
-    }
-
     public static final String CREATE_USER_TABLE_SQL = PropertiesUtil.getSQL("user.create.table");
 
     public static final String SAVE_USER_SQL = PropertiesUtil.getSQL("user.insert");
 
     public static final String GET_ALL_USERS_SQL = PropertiesUtil.getSQL("user.get.all");
 
-    public static final UserDaoJDBCImpl INSTANCE = new UserDaoJDBCImpl();
+
+    private static volatile UserDaoJDBCImpl INSTANCE;
 
     public static UserDaoJDBCImpl getInstance() {
-        return INSTANCE;
+        UserDaoJDBCImpl localInstance = INSTANCE;
+        if (localInstance == null) {
+            synchronized (UserDaoJDBCImpl.class) {
+                localInstance = INSTANCE;
+                if (localInstance == null) {
+                    INSTANCE = localInstance = new UserDaoJDBCImpl();
+                }
+            }
+        }
+        return localInstance;
     }
 
     public void createUsersTable() {
@@ -41,7 +47,7 @@ public class UserDaoJDBCImpl implements UserDao {
             logger.info("JDBC: Table created successfully");
         } catch (SQLException e) {
             logger.error("JDBC: Error creating table", e);
-            throw new DaoException("JDBC implementation failed",e);
+            throw new DatabaseException("JDBC implementation failed",e);
         }
     }
 
@@ -49,11 +55,11 @@ public class UserDaoJDBCImpl implements UserDao {
         try(Connection con = Util.open();
             PreparedStatement st = con.prepareStatement("drop table if exists public.user"))
         {
-            logger.info("JDBC: Table dropped successfully");
             st.execute();
+            logger.info("JDBC: Table dropped successfully");
         } catch (SQLException e) {
             logger.error("JDBC: Error dropping table", e);
-            throw new DaoException("JDBC implementation failed",e);
+            throw new DatabaseException("JDBC implementation failed",e);
         }
     }
 
@@ -64,11 +70,15 @@ public class UserDaoJDBCImpl implements UserDao {
             st.setString(1, name);
             st.setString(2, lastName);
             st.setByte(3, age);
-            st.execute();
-            logger.info("JDBC: user added successfully");
+            int usersModified = st.executeUpdate();
+            if (usersModified > 0) {
+                logger.info("JDBC: user added successfully" + usersModified);
+            } else {
+                logger.warn("JDBC: same user is already here");
+            }
         } catch (SQLException e) {
             logger.error("JDBC: Error adding user", e);
-            throw new DaoException("JDBC implementation failed",e);
+            throw new DatabaseException("JDBC implementation failed",e);
         }
 
     }
@@ -82,7 +92,7 @@ public class UserDaoJDBCImpl implements UserDao {
             st.execute();
         } catch (SQLException e) {
             logger.error("JDBC: Error removing user", e);
-            throw new DaoException("JDBC implementation failed",e);
+            throw new DatabaseException("JDBC implementation failed",e);
         }
     }
 
@@ -102,7 +112,7 @@ public class UserDaoJDBCImpl implements UserDao {
             }
         } catch (SQLException e) {
             logger.error("JDBC: Error getting all users", e);
-            throw new DaoException("JDBC implementation failed",e);
+            throw new DatabaseException("JDBC implementation failed",e);
         }
         return usersList;
     }
@@ -114,7 +124,7 @@ public class UserDaoJDBCImpl implements UserDao {
             logger.info("Connect есть. Удаляю всех user JDBC");
             st.execute();
         } catch (SQLException e) {
-            throw new DaoException(e);
+            throw new DatabaseException(e);
         }
     }
 }

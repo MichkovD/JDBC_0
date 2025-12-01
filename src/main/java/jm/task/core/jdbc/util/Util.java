@@ -15,7 +15,7 @@ import java.sql.SQLException;
 
 public class Util {
     private static SessionFactory sessionFactory;
-    private static final Logger logger = LoggerFactory.logger(Main.class);
+    private static final Logger logger = LoggerFactory.logger(Util.class);
     private static final String URL_KEY = "db.url";
     private static final String USERNAME_KEY = "db.username";
     private static final String PASSWORD_KEY = "db.password";
@@ -37,22 +37,15 @@ public class Util {
 
     static {
         try {
-            logger.info("Конфигурация для хибера");
+            logger.info("Конфигурация для хибера вынесена в отдельный файл");
             Configuration configuration = new Configuration();
-            configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-            configuration.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver");
-            configuration.setProperty("hibernate.connection.url", "jdbc:postgresql://localhost:1234/postgres");
-            configuration.setProperty("hibernate.connection.username", "postgres");
-            configuration.setProperty("hibernate.connection.password", "Mi14062001");
-            configuration.setProperty("hibernate.hbm2ddl.auto", "update"); // или "create", "validate" и т.д.
-            configuration.setProperty("hibernate.show_sql", "true");
-            configuration.setProperty("hibernate.format_sql", "true");
+            configuration.configure();
             configuration.addAnnotatedClass(User.class);
              StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder()
                        .applySettings(configuration.getProperties());
              sessionFactory = configuration.buildSessionFactory(registryBuilder.build());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error while connecting to DB");
         }
     }
     private Util() {
