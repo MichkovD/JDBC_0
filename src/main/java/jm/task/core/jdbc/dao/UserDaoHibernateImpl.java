@@ -14,12 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @Slf4j
 public class UserDaoHibernateImpl implements UserDao {
-    private static final int MAX_USERS_TO_GET = 1000;
-
     private static final String CREATE_TABLE_SQL = PropertiesUtil.getSQL("user.create.table");
-
     private static final String DROP_TABLE_SQL = PropertiesUtil.getSQL("user.drop.table");
-
     private static volatile UserDaoHibernateImpl INSTANCE;
 
     public static UserDaoHibernateImpl getInstance() {
@@ -34,6 +30,7 @@ public class UserDaoHibernateImpl implements UserDao {
         }
         return localInstance;
     }
+
     @Override
     public void createUsersTable() {
         Transaction transaction = null;
@@ -105,12 +102,16 @@ public class UserDaoHibernateImpl implements UserDao {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(int page, int size) {
+        if (page < 1 || size < 1){
+            throw new RuntimeException("should do page >= 1 and size >= 1");
+        }
+
         try (var session = Util.getSessionFactory().openSession()) {
             List<User> usersList = session.createQuery("FROM User", User.class)
-                    .setMaxResults(MAX_USERS_TO_GET)
+                    .setFirstResult((page - 1) * size)
+                    .setMaxResults(size)
                     .list();
-
             log.info("Hibernate: successfully got {} users", usersList.size());
             return usersList;
 

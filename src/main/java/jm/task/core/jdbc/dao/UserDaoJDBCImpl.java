@@ -5,6 +5,8 @@ import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.PropertiesUtil;
 import jm.task.core.jdbc.util.Util;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Slf4j
 public class UserDaoJDBCImpl implements UserDao {
-    private static final int MAX_USERS_TO_GET = 1000;
-
     public static final String CLEAN_USER_TABLE_SQL = PropertiesUtil.getSQL("user.clean.table");
     public static final String CREATE_USER_TABLE_SQL = PropertiesUtil.getSQL("user.create.table");
-
     public static final String SAVE_USER_SQL = PropertiesUtil.getSQL("user.insert");
-
     public static final String GET_ALL_USERS_SQL = PropertiesUtil.getSQL("user.get.all");
-
 
     private static volatile UserDaoJDBCImpl INSTANCE;
 
@@ -97,12 +94,16 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(int page, int size) {
+        if (page < 1 || size < 1){
+            throw new IllegalArgumentException("should do page >= 1 and size >= 1");
+        }
         ArrayList<User> usersList = new ArrayList<User>();
         try(Connection con = Util.open();
             PreparedStatement st = con.prepareStatement(GET_ALL_USERS_SQL))
         {
-            st.setInt(1, MAX_USERS_TO_GET);
+            st.setInt(1, size);
+            st.setInt(2, (page - 1) * size);
             ResultSet rs = st.executeQuery();
             while(rs.next()) {
                 User user = new User();

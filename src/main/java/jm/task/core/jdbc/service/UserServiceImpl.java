@@ -10,6 +10,8 @@ import java.util.List;
 
 @NoArgsConstructor
 public class UserServiceImpl implements UserService {
+    private final int DEFAULT_PAGE = 1;
+    private final int DEFAULT_SIZE = 100;
 
     private static final boolean switchToHibernate = Boolean.parseBoolean(PropertiesUtil.get("switchToHibernate"));
     public UserDao userDao = getUserDao();
@@ -37,8 +39,12 @@ public class UserServiceImpl implements UserService {
         userDao.removeUserById(id);
     }
 
+    public List<User> getAllUsers(int page, int size) {
+        return userDao.getAllUsers(page, size);
+    }
+
     public List<User> getAllUsers() {
-        return userDao.getAllUsers();
+        return userDao.getAllUsers(DEFAULT_PAGE, DEFAULT_SIZE);
     }
 
     public void cleanUsersTable() {
